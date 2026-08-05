@@ -6,6 +6,9 @@ import router from "./routes/index.js";
 import chatSocket from "./sockets/socket.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger/swagger-output.json" with { type: "json" };
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
@@ -31,7 +34,7 @@ chatSocket(io);
 app.get("/check", (req, res) => {
   res.json("Success");
 });
-
-server.listen(5000, () => {
-  console.log("Server running on 5000");
+const PORT = process.env.PORT || 8010;
+server.listen(PORT, () => {
+  console.log(`Server running on - ${PORT}`);
 });
