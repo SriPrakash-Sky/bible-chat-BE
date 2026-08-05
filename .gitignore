@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build folders
+dist/
+build/
+out/
+
+# Next.js (if used)
+.next/
+
+# Vite
+.vite/
+
+# Cache
+.cache/
+.parcel-cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+
+# MongoDB local data (if any)
+data/
+
+# Uploads (if storing locally)
+uploads/
+
+# AWS / secrets
+*.pem
+*.key
+
+# Optional: lock files (team decision)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
