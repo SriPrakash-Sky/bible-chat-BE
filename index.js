@@ -29,7 +29,7 @@ const io = new Server(server, {
 // Make io available globally
 global.io = io;
 
-chatSocket(io);
+// chatSocket(io);
 
 app.get("/check", (req, res) => {
   res.json("Success");
