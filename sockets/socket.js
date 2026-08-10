@@ -1,176 +1,129 @@
-import db from "../config/db.js";
+// import db from "../config/db.js";
+// import { openConvo, updateUserStatus } from "./socketApi.js";
 
-const onlineUsers = new Map();
+// const onlineUsers = new Map();
 
-const chatSocket = (io) => {
-  io.on("connection", (socket) => {
-    console.log("Socket Connected :", socket.id);
+// const chatSocket = (io) => {
+//   io.on("connection", (socket) => {
+//     console.log("Socket Connected :", socket.id);
 
-    /*
-      User Connected
-    */
-    socket.on("join", async (user_id) => {
-      try {
-        user_id = Number(user_id);
+//     /*
+//       User Connected
+//     */
+//     socket.on("join", async (user_id) => {
+//       try {
+//         user_id = Number(user_id);
 
-        socket.user_id = user_id;
+//         socket.user_id = user_id;
 
-        onlineUsers.set(user_id, socket.id);
+//         onlineUsers.set(user_id, socket.id);
 
-        socket.join(`user_${user_id}`);
+//         socket.join(`user_${user_id}`);
 
-        await db.query(
-          `
-      UPDATE users
-      SET is_online = 1
-      WHERE id = ?
-      `,
-          [user_id],
-        );
+//         await updateUserStatus(user_id, true);
 
-        // Send existing online users to this user
-        socket.emit("online_users", Array.from(onlineUsers.keys()));
+//         // Send existing online users to this user
+//         socket.emit("online_users", Array.from(onlineUsers.keys()));
 
-        // Notify everyone that this user came online
-        io.emit("user_online", {
-          user_id,
-        });
+//         // Notify everyone that this user came online
+//         io.emit("user_online", {
+//           user_id,
+//         });
 
-        console.log(`${user_id} Online`);
+//         console.log(`${user_id} Online`);
 
-        console.log("Online Users :", Array.from(onlineUsers.keys()));
-      } catch (err) {
-        console.log(err);
-      }
-    });
+//         console.log("Online Users :", Array.from(onlineUsers.keys()));
+//       } catch (err) {
+//         console.log(err);
+//       }
+//     });
 
-    /*
-      Open Conversation
-    */
-    socket.on("join_conversation", async (data) => {
-      try {
-        const { conversation_id, user_id } = data;
+//     /*
+//       Open Conversation
+//     */
+//     socket.on("join_conversation", async (data) => {
+//       try {
+//         const { conversation_id, user_id } = data;
 
-        socket.join(`conversation_${conversation_id}`);
+//         socket.join(`conversation_${conversation_id}`);
 
-        console.log(`${user_id} joined conversation ${conversation_id}`);
+//         console.log(`${user_id} joined conversation ${conversation_id}`);
 
-        /*
-          Mark Sent -> Delivered
-        */
+//         /*
+//           Mark Sent -> Delivered
+//         */
 
-        const [messages] = await db.query(
-          `
-          SELECT
-            id,
-            sender_id
-          FROM messages
-          WHERE
-            conversation_id = ?
-            AND sender_id <> ?
-            AND is_read = 0
-          `,
-          [conversation_id, user_id],
-        );
+//         await openConvo(user_id, conversation_id);
+//       } catch (err) {
+//         console.log(err);
+//       }
+//     });
 
-        if (messages.length > 0) {
-          await db.query(
-            `
-            UPDATE messages
-            SET is_read = 1
-            WHERE
-              conversation_id = ?
-              AND sender_id <> ?
-              AND is_read = 0
-            `,
-            [conversation_id, user_id],
-          );
+//     /*
+//       Leave Conversation
+//     */
 
-          messages.forEach((msg) => {
-            io.to(`user_${msg.sender_id}`).emit("message_delivered", {
-              message_id: msg.id,
-            });
-          });
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    });
+//     socket.on("leave_conversation", (conversation_id) => {
+//       socket.leave(`conversation_${conversation_id}`);
+//     });
 
-    /*
-      Leave Conversation
-    */
+//     /*
+//       Typing
+//     */
 
-    socket.on("leave_conversation", (conversation_id) => {
-      socket.leave(`conversation_${conversation_id}`);
-    });
+//     socket.on("typing", (data) => {
+//       socket.to(`conversation_${data.conversation_id}`).emit("typing", {
+//         user_id: data.user_id,
+//       });
+//     });
 
-    /*
-      Typing
-    */
+//     /*
+//       Stop Typing
+//     */
 
-    socket.on("typing", (data) => {
-      socket.to(`conversation_${data.conversation_id}`).emit("typing", {
-        user_id: data.user_id,
-      });
-    });
+//     socket.on("stop_typing", (data) => {
+//       socket.to(`conversation_${data.conversation_id}`).emit("stop_typing", {
+//         user_id: data.user_id,
+//       });
+//     });
 
-    /*
-      Stop Typing
-    */
+//     /*
+//       Read Receipt
+//     */
 
-    socket.on("stop_typing", (data) => {
-      socket.to(`conversation_${data.conversation_id}`).emit("stop_typing", {
-        user_id: data.user_id,
-      });
-    });
+//     socket.on("messages_read", (data) => {
+//       io.to(`conversation_${data.conversation_id}`).emit("messages_read", {
+//         conversation_id: data.conversation_id,
+//       });
+//     });
 
-    /*
-      Read Receipt
-    */
+//     /*
+//       Disconnect
+//     */
 
-    socket.on("messages_read", (data) => {
-      io.to(`conversation_${data.conversation_id}`).emit("messages_read", {
-        conversation_id: data.conversation_id,
-      });
-    });
+//     socket.on("disconnect", async () => {
+//       try {
+//         if (socket.user_id) {
+//           onlineUsers.delete(socket.user_id);
 
-    /*
-      Disconnect
-    */
+//           await updateUserStatus(user_id, false);
 
-    socket.on("disconnect", async () => {
-      try {
-        if (socket.user_id) {
-          onlineUsers.delete(socket.user_id);
+//           io.emit("user_offline", {
+//             user_id: socket.user_id,
+//             last_seen: new Date(),
+//           });
 
-          await db.query(
-            `
-            UPDATE users
-            SET
-              is_online = 0,
-              last_seen = NOW()
-            WHERE id = ?
-            `,
-            [socket.user_id],
-          );
+//           console.log(`${socket.user_id} Offline`);
+//         }
 
-          io.emit("user_offline", {
-            user_id: socket.user_id,
-            last_seen: new Date(),
-          });
+//         console.log("Socket Disconnected");
+//       } catch (err) {
+//         console.log(err);
+//       }
+//     });
+//   });
+// };
 
-          console.log(`${socket.user_id} Offline`);
-        }
+// export default chatSocket;
 
-        console.log("Socket Disconnected");
-      } catch (err) {
-        console.log(err);
-      }
-    });
-  });
-};
-
-export default chatSocket;
-
-export { onlineUsers };
+// export { onlineUsers };

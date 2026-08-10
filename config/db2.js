@@ -1,0 +1,22 @@
+import mysql from "mysql2/promise";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const db2 = mysql.createPool({
+  host: process.env.DB2_HOST2,
+  user: process.env.DB2_USER2,
+  password: process.env.DB2_PASS2,
+  database: process.env.DB2_NAME2,
+  connectionLimit: 10,
+});
+
+try {
+  const connection = await db2.getConnection();
+  console.log("Secondary Database Connected");
+  connection.release();
+} catch (err) {
+  console.log("Secondary Database Error:", err.message);
+}
+
+export default db2;

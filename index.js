@@ -3,7 +3,7 @@ import http from "http";
 import cors from "cors";
 import { Server } from "socket.io";
 import router from "./routes/index.js";
-import chatSocket from "./sockets/socket.js";
+// import chatSocket from "./sockets/socket.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger/swagger-output.json" with { type: "json" };
 import dotenv from "dotenv";

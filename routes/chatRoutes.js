@@ -9,6 +9,7 @@ import {
   deleteMessage,
   updateReadStatus,
   editMessage,
+  updateChatStatus,
 } from "../controllers/chatController.js";
 
 const router = express.Router();
@@ -156,5 +157,25 @@ router.post(
   */
 
   deleteConversation,
+);
+
+router.post(
+  "/online-status",
+
+  /*
+    #swagger.tags = ['Chat']
+    #swagger.summary = 'Delete Conversation'
+
+    #swagger.parameters['body'] = {
+      in: 'body',
+      required: true,
+      schema: {
+        user_id: 1,
+        is_online : 1
+      }
+    }
+  */
+
+  updateChatStatus,
 );
 export default router;

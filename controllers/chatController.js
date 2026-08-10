@@ -950,3 +950,50 @@ export const deleteConversation = async (req, res) => {
     connection.release();
   }
 };
+
+export const updateChatStatus = async (req, res) => {
+  try {
+    const { user_id, is_online } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "user_id is required",
+      });
+    }
+
+    if (is_online) {
+      await db.query(
+        `
+        UPDATE users
+        SET is_online = 1
+        WHERE id = ?
+        `,
+        [user_id],
+      );
+    } else {
+      await db.query(
+        `
+        UPDATE users
+        SET
+          is_online = 0,
+          last_seen = NOW()
+        WHERE id = ?
+        `,
+        [user_id],
+      );
+    }
+
+    return res.json({
+      success: true,
+      message: "User status updated",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update user status",
+    });
+  }
+};
