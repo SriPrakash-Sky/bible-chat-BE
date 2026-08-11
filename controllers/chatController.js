@@ -49,6 +49,7 @@ export const getConversations = async (req, res) => {
 };
 
 import pool from "../config/db.js";
+import { socketNotifier } from "../sockets/socketApi.js";
 import { handleRemoveNull } from "../utils/helper.js";
 
 export const getConversation = async (req, res) => {
@@ -339,6 +340,7 @@ export const sendMessage = async (req, res) => {
     const {
       conversation_id,
       sender_id,
+      receiver_id,
       message,
       message_type = "text",
       reply_message_id = 0,
@@ -468,11 +470,22 @@ export const sendMessage = async (req, res) => {
     await connection.commit();
 
     // Socket
-    if (global.io) {
-      global.io
-        .to(`conversation_${conversation_id}`)
-        .emit("receive_message", messageData[0]);
-    }
+    // if (global.io) {
+    //   global.io
+    //     .to(`conversation_${conversation_id}`)
+    //     .emit("receive_message", messageData[0]);
+    // }
+
+    let newMsg = {
+      id: insert.insertId,
+      conversation_id,
+      sender_id: sender_id,
+      receiver_id,
+      message,
+      created_at: Date.now(),
+    };
+    console.log("487");
+    await socketNotifier.newMessage(newMsg);
 
     return res.status(200).json({
       success: true,
@@ -497,7 +510,7 @@ export const editMessage = async (req, res) => {
   const connection = await pool.getConnection();
 
   try {
-    const { message_id, sender_id, message } = req.body;
+    const { conversation_id, message_id, sender_id, message } = req.body;
 
     if (!message_id || !sender_id || !message) {
       return res.status(400).json({
@@ -550,11 +563,12 @@ export const editMessage = async (req, res) => {
       [message_id],
     );
 
-    if (global.io) {
-      global.io
-        .to(`conversation_${updated[0].conversation_id}`)
-        .emit("message_edited", updated[0]);
-    }
+    await socketNotifier.editMessage({
+      conversation_id,
+      message_id,
+      sender_id,
+      message,
+    });
 
     return res.status(200).json({
       success: true,
@@ -677,11 +691,14 @@ export const replyMessage = async (req, res) => {
 
     await connection.commit();
 
-    if (global.io) {
-      global.io
-        .to(`conversation_${conversation_id}`)
-        .emit("receive_message", data[0]);
-    }
+    // let newMsg = {
+    //   id: insert.insertId,
+    //   sender_id: sender_id,
+    //   message,
+    //   created_at: Date.now(),
+    //   is_read: 0,
+    // };
+    // await socketNotifier.newMessage(newMsg);
 
     return res.status(200).json({
       success: true,

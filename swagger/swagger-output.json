@@ -5,13 +5,13 @@
     "description": "Chat Module APIs",
     "version": "1.0.0"
   },
-  "host": "localhost:5000/api/chat",
+  "host": "localhost:5001/api/chat",
   "basePath": "/",
   "schemes": [
     "http"
   ],
   "paths": {
-    "/conversation": {
+    "/create-conversation": {
       "post": {
         "tags": [
           "Chat"
@@ -25,11 +25,11 @@
             "schema": {
               "type": "object",
               "properties": {
-                "senderId": {
+                "sender_id": {
                   "type": "number",
                   "example": 0
                 },
-                "receiverId": {
+                "receiver_id": {
                   "type": "number",
                   "example": 0
                 }
@@ -43,6 +43,350 @@
           },
           "201": {
             "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/conversation-list": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "type": "number",
+                  "example": 0
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/single-conversation": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "conversation_id": {
+                  "type": "number",
+                  "example": 0
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/send-message": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Send Message",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "conversation_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "sender_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "receiver_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Hello"
+                },
+                "message_type": {
+                  "type": "string",
+                  "example": "text"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/edit-message": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Send Message",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "conversation_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "message_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "sender_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Hello"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/read-message": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Update Read Status",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "conversation_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "user_id": {
+                  "type": "number",
+                  "example": 2
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/delete-message": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Delete Message",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "sender_id": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/delete-conversation": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Delete Conversation",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "conversation_id": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/online-status": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Delete Conversation",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "is_online": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request"

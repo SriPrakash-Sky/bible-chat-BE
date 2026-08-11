@@ -22,8 +22,8 @@ router.post(
       in: 'body',
       required: true,
       schema: {
-        senderId: 0,
-        receiverId: 0
+        sender_id: 0,
+        receiver_id: 0
       }
     }
   */ getConversation,
@@ -70,6 +70,7 @@ router.post(
       schema:{
         conversation_id:1,
         sender_id:1,
+        receiver_id:1,
         message:"Hello",
         message_type:"text"
       }
@@ -90,6 +91,7 @@ router.post(
       in:'body',
       required:true,
       schema:{
+        conversation_id:1,
         message_id:1,
         sender_id:1,
         message:"Hello"

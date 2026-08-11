@@ -1,58 +1,35 @@
-// "use strict";
+import axios from "axios";
 
-// const API_URL = process.env.API_URL;
+const SOCKET_SERVER = process.env.SOCKET_SERVER_URL;
 
-// const updateUserStatus = async (user_id, is_online) => {
-//   try {
-//     const response = await fetch(`${API_URL}/chat/online-status`, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         user_id,
-//         is_online,
-//       }),
-//     });
+export const socketNotifier = {
+  // ── existing ────────────────────────────────────────────────────────────────
+  conversationUpdate: (data) =>
+    axios
+      .post(`${SOCKET_SERVER}/emit/conversation_update`, data)
+      .catch(console.error),
+  block: (data) =>
+    axios.post(`${SOCKET_SERVER}/emit/block`, data).catch(console.error),
+  newMessage: (data) =>
+    axios.post(`${SOCKET_SERVER}/emit/send-message`, data).catch(console.error),
+  markRead: (data) =>
+    axios.post(`${SOCKET_SERVER}/emit/mark-read`, data).catch(console.error),
+  editMessage: (data) =>
+    axios.post(`${SOCKET_SERVER}/emit/edit-message`, data).catch(console.error),
+  unsendMessage: (data) =>
+    axios
+      .post(`${SOCKET_SERVER}/emit/unsend-message`, data)
+      .catch(console.error),
 
-//     const data = await response.json();
-
-//     console.log("Status API:", data);
-
-//     return data;
-//   } catch (error) {
-//     console.error("Status API error:", error.message);
-
-//     throw error;
-//   }
-// };
-
-// const openConvo = async (user_id, conversation_id) => {
-//   try {
-//     const response = await fetch(`${API_URL}/chat/read-message`, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         user_id,
-//         conversation_id,
-//       }),
-//     });
-
-//     const data = await response.json();
-
-//     console.log("Read message API:", data);
-
-//     return data;
-//   } catch (error) {
-//     console.error("Read message API error:", error.message);
-
-//     throw error;
-//   }
-// };
-
-// module.exports = {
-//   updateUserStatus,
-//   openConvo,
-// };
+  // ── call events ─────────────────────────────────────────────────────────────
+  incomingCall: (data) =>
+    axios
+      .post(`${SOCKET_SERVER}/emit/incoming-call`, data)
+      .catch(console.error),
+  acceptCall: (data) =>
+    axios.post(`${SOCKET_SERVER}/emit/accept-call`, data).catch(console.error),
+  rejectCall: (data) =>
+    axios.post(`${SOCKET_SERVER}/emit/reject-call`, data).catch(console.error),
+  endCall: (data) =>
+    axios.post(`${SOCKET_SERVER}/emit/end-call`, data).catch(console.error),
+};

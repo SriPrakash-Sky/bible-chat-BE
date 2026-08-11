@@ -5,7 +5,7 @@ const doc = {
     title: "Chat API",
     description: "Chat Module APIs",
   },
-  host: "localhost:5000/api/chat",
+  host: "localhost:5001/api/chat",
   schemes: ["http"],
 };
 
