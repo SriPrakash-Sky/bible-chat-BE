@@ -1,4 +1,5 @@
 import db from "../config/db.js";
+import db2 from "../config/db2.js";
 
 export const getConversations = async (req, res) => {
   try {
@@ -8,8 +9,6 @@ export const getConversations = async (req, res) => {
       `
             SELECT
                 c.id AS conversation_id,
-                u.id AS user_id,
-                u.name,
                 c.last_message,
                 c.last_message_time,
                 cm.unread_count
@@ -21,8 +20,6 @@ export const getConversations = async (req, res) => {
             JOIN conversation_members other
                 ON other.conversation_id = c.id
 
-            JOIN users u
-                ON u.id = other.user_id
 
             JOIN conversation_members cm
                 ON cm.conversation_id = c.id
@@ -36,9 +33,43 @@ export const getConversations = async (req, res) => {
       [userId, userId, userId],
     );
 
+    const userIds = rows.map((row) => row.user_id);
+
+    // Create ?, ?, ? placeholders
+    const placeholders = userIds.map(() => "?").join(",");
+
+    // Get user details from DB2
+    const [users] = await db2.query(
+      `
+      SELECT
+          id,
+          name
+      FROM users
+      WHERE id IN (${placeholders})
+      `,
+      userIds,
+    );
+
+    // Convert users into Map for fast lookup
+    const userMap = new Map(users.map((user) => [Number(user.id), user]));
+
+    // Combine DB1 + DB2 data
+    const conversations = rows.map((conversation) => {
+      const user = userMap.get(Number(conversation.user_id));
+
+      return {
+        conversation_id: conversation.conversation_id,
+        user_id: conversation.user_id,
+        name: user?.name || null,
+        last_message: conversation.last_message,
+        last_message_time: conversation.last_message_time,
+        unread_count: conversation.unread_count,
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      data: rows,
+      data: conversations,
     });
   } catch (error) {
     return res.status(500).json({
@@ -184,7 +215,6 @@ export const getConversationsList = async (req, res) => {
     const [rows] = await pool.query(
       `
       SELECT
-
           c.id AS conversation_id,
           c.type,
           c.last_message,
@@ -192,10 +222,7 @@ export const getConversationsList = async (req, res) => {
 
           cm.unread_count,
 
-          u.id AS user_id,
-          u.name,
-          u.is_online,
-          u.last_seen
+          other.user_id
 
       FROM conversations c
 
@@ -207,9 +234,6 @@ export const getConversationsList = async (req, res) => {
           ON other.conversation_id = c.id
           AND other.user_id <> ?
 
-      INNER JOIN users u
-          ON u.id = other.user_id
-
       ORDER BY
           c.last_message_time DESC,
           c.updated_at DESC
@@ -217,11 +241,47 @@ export const getConversationsList = async (req, res) => {
       [user_id, user_id],
     );
 
-    await handleRemoveNull(rows);
+    const userIds = rows.map((row) => Number(row.user_id));
+
+    const placeholders = userIds.map(() => "?").join(",");
+    console.log("userIds", userIds);
+    // DB2 - Get user details
+    const [users] = await db2.query(
+      `
+      SELECT
+          id,
+          name
+      FROM users
+      WHERE id IN (${placeholders})
+      `,
+      userIds,
+    );
+
+    // Convert users to Map
+    const userMap = new Map(users.map((user) => [Number(user.id), user]));
+
+    // Merge DB1 + DB2
+    const conversations = rows.map((row) => {
+      const user = userMap.get(Number(row.user_id));
+
+      return {
+        conversation_id: row.conversation_id,
+        type: row.type,
+        last_message: row.last_message,
+        last_message_time: row.last_message_time,
+        unread_count: row.unread_count,
+
+        user_id: row.user_id,
+        name: user?.name || null,
+      };
+    });
+
+    await handleRemoveNull(conversations);
+
     return res.status(200).json({
       success: true,
-      total: rows.length,
-      data: rows,
+      total: conversations.length,
+      data: conversations,
     });
   } catch (error) {
     console.log(error);
@@ -249,29 +309,32 @@ export const getSingleChatMessages = async (req, res) => {
 
     const offset = (pageNo - 1) * pageLimit;
 
-    // Total Messages
+    // =========================
+    // Total Messages - DB1
+    // =========================
+
     const [countResult] = await pool.query(
       `
       SELECT COUNT(*) AS total
       FROM messages
-      WHERE conversation_id=?
+      WHERE conversation_id = ?
       `,
       [conversation_id],
     );
 
-    const total = countResult[0].total;
+    const total = Number(countResult[0].total);
 
-    // Messages
+    // =========================
+    // Messages - DB1
+    // =========================
+
     const [messages] = await pool.query(
       `
       SELECT
-
           m.id,
           m.conversation_id,
 
           m.sender_id,
-          sender.name AS sender_name,
-
 
           m.message,
           m.message_type,
@@ -290,14 +353,11 @@ export const getSingleChatMessages = async (req, res) => {
 
       FROM messages m
 
-      LEFT JOIN users sender
-          ON sender.id = m.sender_id
-
       LEFT JOIN messages rm
           ON rm.id = m.reply_message_id
 
       WHERE
-          m.conversation_id=?
+          m.conversation_id = ?
 
       ORDER BY
           m.created_at DESC
@@ -308,7 +368,78 @@ export const getSingleChatMessages = async (req, res) => {
       [conversation_id, pageLimit, offset],
     );
 
-    await handleRemoveNull(messages);
+    // No messages
+    if (!messages.length) {
+      return res.status(200).json({
+        success: true,
+        total,
+        page: pageNo,
+        limit: pageLimit,
+        total_pages: Math.ceil(total / pageLimit),
+        data: [],
+      });
+    }
+
+    // =========================
+    // Get Sender IDs
+    // =========================
+
+    const senderIds = [
+      ...new Set(messages.map((message) => Number(message.sender_id))),
+    ];
+
+    // =========================
+    // Users - DB2
+    // =========================
+
+    const placeholders = senderIds.map(() => "?").join(",");
+
+    const [users] = await db2.query(
+      `
+      SELECT
+          id,
+          name
+      FROM users
+      WHERE id IN (${placeholders})
+      `,
+      senderIds,
+    );
+
+    // =========================
+    // User Map
+    // =========================
+
+    const userMap = new Map(users.map((user) => [Number(user.id), user]));
+
+    // =========================
+    // Merge Messages + Users
+    // =========================
+
+    const finalMessages = messages.map((message) => {
+      const sender = userMap.get(Number(message.sender_id));
+
+      return {
+        id: message.id,
+        conversation_id: message.conversation_id,
+
+        sender_id: message.sender_id,
+        sender_name: sender?.name || null,
+
+        message: message.message,
+        message_type: message.message_type,
+
+        reply_message_id: message.reply_message_id,
+        reply_message: message.reply_message,
+
+        is_edited: message.is_edited,
+        is_read: message.is_read,
+
+        created_at: message.created_at,
+      };
+    });
+
+    await handleRemoveNull(finalMessages);
+
     return res.status(200).json({
       success: true,
 
@@ -320,10 +451,10 @@ export const getSingleChatMessages = async (req, res) => {
 
       total_pages: Math.ceil(total / pageLimit),
 
-      data: messages,
+      data: finalMessages,
     });
   } catch (error) {
-    console.log(error);
+    console.error("getSingleChatMessages error:", error);
 
     return res.status(500).json({
       success: false,
@@ -454,18 +585,18 @@ export const sendMessage = async (req, res) => {
     );
 
     // Get inserted message
-    const [messageData] = await connection.query(
-      `
-      SELECT
-        m.*,
-        u.name AS sender_name
-      FROM messages m
-      INNER JOIN users u
-        ON u.id = m.sender_id
-      WHERE m.id = ?
-      `,
-      [insert.insertId],
-    );
+    // const [messageData] = await connection.query(
+    //   `
+    //   SELECT
+    //     m.*,
+    //     u.name AS sender_name
+    //   FROM messages m
+    //   INNER JOIN users u
+    //     ON u.id = m.sender_id
+    //   WHERE m.id = ?
+    //   `,
+    //   [insert.insertId],
+    // );
 
     await connection.commit();
 
@@ -490,7 +621,7 @@ export const sendMessage = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Message sent successfully",
-      data: messageData[0],
+      data: "",
     });
   } catch (error) {
     await connection.rollback();
@@ -667,27 +798,27 @@ export const replyMessage = async (req, res) => {
       [conversation_id, sender_id],
     );
 
-    const [data] = await connection.query(
-      `
-      SELECT
-        m.*,
-        u.name AS sender_name,
+    // const [data] = await connection.query(
+    //   `
+    //   SELECT
+    //     m.*,
+    //     u.name AS sender_name,
 
-        r.message AS reply_message,
-        r.sender_id AS reply_sender_id
+    //     r.message AS reply_message,
+    //     r.sender_id AS reply_sender_id
 
-      FROM messages m
+    //   FROM messages m
 
-      INNER JOIN users u
-      ON u.id=m.sender_id
+    //   INNER JOIN users u
+    //   ON u.id=m.sender_id
 
-      LEFT JOIN messages r
-      ON r.id=m.reply_message_id
+    //   LEFT JOIN messages r
+    //   ON r.id=m.reply_message_id
 
-      WHERE m.id=?
-      `,
-      [insert.insertId],
-    );
+    //   WHERE m.id=?
+    //   `,
+    //   [insert.insertId],
+    // );
 
     await connection.commit();
 
@@ -703,7 +834,7 @@ export const replyMessage = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Reply sent successfully",
-      data: data[0],
+      data: [],
     });
   } catch (error) {
     await connection.rollback();
@@ -741,7 +872,7 @@ export const updateReadStatus = async (req, res) => {
       SET is_read = 1
       WHERE
           conversation_id = ?
-          AND sender_id <> ?
+          AND sender_id != ?
           AND is_read = 0
       `,
       [conversation_id, user_id],
@@ -759,15 +890,8 @@ export const updateReadStatus = async (req, res) => {
       [conversation_id, user_id],
     );
 
+    await socketNotifier.markRead({ conversation_id, user_id });
     await connection.commit();
-
-    // Notify sender(s)
-    if (global.io) {
-      global.io.to(`conversation_${conversation_id}`).emit("messages_read", {
-        conversation_id,
-        user_id,
-      });
-    }
 
     return res.status(200).json({
       success: true,
@@ -980,7 +1104,7 @@ export const updateChatStatus = async (req, res) => {
     }
 
     if (is_online) {
-      await db.query(
+      await db2.query(
         `
         UPDATE users
         SET is_online = 1
@@ -989,12 +1113,11 @@ export const updateChatStatus = async (req, res) => {
         [user_id],
       );
     } else {
-      await db.query(
+      await db2.query(
         `
         UPDATE users
         SET
-          is_online = 0,
-          last_seen = NOW()
+          is_online = 0
         WHERE id = ?
         `,
         [user_id],
