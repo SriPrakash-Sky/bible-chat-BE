@@ -1,4 +1,7 @@
 import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const SOCKET_SERVER = process.env.SOCKET_SERVER_URL;
 
