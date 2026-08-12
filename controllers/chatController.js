@@ -241,6 +241,14 @@ export const getConversationsList = async (req, res) => {
       [user_id, user_id],
     );
 
+    if (!rows?.length) {
+      return res.status(200).json({
+        success: true,
+        total: 0,
+        data: [],
+      });
+    }
+
     const userIds = rows.map((row) => Number(row.user_id));
 
     const placeholders = userIds.map(() => "?").join(",");
