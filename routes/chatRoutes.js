@@ -22,10 +22,20 @@ router.post(
       in: 'body',
       required: true,
       schema: {
+        app_id: 0,
+        post_id: 0,
         sender_id: 0,
         receiver_id: 0
       }
     }
+        #swagger.responses[200] = {
+    description: "Conversation created successfully",
+    schema: {
+      "success": true,
+      "message": "Conversation created successfully",
+      "conversation_id": 4
+    }
+  }
   */ getConversation,
 );
 
@@ -51,9 +61,33 @@ router.post(
       in: 'body',
       required: true,
       schema: {
-        conversation_id: 0
+        conversation_id: 0,
+        page: 1
       }
     }
+       #swagger.responses[200] = {
+    description: "Conversation created successfully",
+    schema:{
+      "success": true,
+      "total": 1,
+      "total_pages": 1,
+      "data": [
+        {
+          "id": 55,
+          "conversation_id": 3,
+          "sender_id": 1,
+          "sender_name": "name",
+          "message": "Hello",
+          "message_type": "text",
+          "reply_message_id": 0,
+          "reply_message": "",
+          "is_edited": 0,
+          "is_read": 0,
+          "created_at": "2026-08-12 12:04:06"
+        }
+      ]
+    }
+  }
   */ getSingleChatMessages,
 );
 
@@ -75,6 +109,14 @@ router.post(
         message_type:"text"
       }
     }
+       #swagger.responses[200] = {
+    description: "Conversation created successfully",
+    schema: {
+        "success": true,
+        "message": "Message sent successfully",
+        "data": []
+      }
+  }
   */
 
   sendMessage,
@@ -97,6 +139,14 @@ router.post(
         message:"Hello"
       }
     }
+    #swagger.responses[200] = {
+    description: "Conversation created successfully",
+    schema: {
+        "success": true,
+        "message": "Message updated",
+        "data": []
+      }
+  }
   */
 
   editMessage,

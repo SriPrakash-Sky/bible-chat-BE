@@ -85,7 +85,7 @@ import { handleRemoveNull } from "../utils/helper.js";
 
 export const getConversation = async (req, res) => {
   try {
-    const { sender_id, receiver_id } = req.body;
+    const { app_id, post_id, sender_id, receiver_id } = req.body;
 
     if (!sender_id || !receiver_id) {
       return res.status(400).json({
@@ -133,12 +133,15 @@ export const getConversation = async (req, res) => {
       `
       INSERT INTO conversations
       (
+          app_id,
+          post_id,
           type,
           created_at,
           updated_at
       )
       VALUES
-      (
+      (${app_id},
+      ${post_id},
           'single',
           NOW(),
           NOW()
@@ -186,7 +189,7 @@ export const getConversation = async (req, res) => {
       [conversationId, receiver_id],
     );
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       message: "Conversation created successfully",
       conversation_id: conversationId,
@@ -381,8 +384,6 @@ export const getSingleChatMessages = async (req, res) => {
       return res.status(200).json({
         success: true,
         total,
-        page: pageNo,
-        limit: pageLimit,
         total_pages: Math.ceil(total / pageLimit),
         data: [],
       });
@@ -452,10 +453,6 @@ export const getSingleChatMessages = async (req, res) => {
       success: true,
 
       total,
-
-      page: pageNo,
-
-      limit: pageLimit,
 
       total_pages: Math.ceil(total / pageLimit),
 
@@ -629,7 +626,7 @@ export const sendMessage = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Message sent successfully",
-      data: "",
+      data: [],
     });
   } catch (error) {
     await connection.rollback();
@@ -712,7 +709,7 @@ export const editMessage = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Message updated successfully",
-      data: updated[0],
+      data: [],
     });
   } catch (error) {
     console.log(error);

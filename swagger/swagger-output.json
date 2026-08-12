@@ -25,6 +25,14 @@
             "schema": {
               "type": "object",
               "properties": {
+                "app_id": {
+                  "type": "number",
+                  "example": 0
+                },
+                "post_id": {
+                  "type": "number",
+                  "example": 0
+                },
                 "sender_id": {
                   "type": "number",
                   "example": 0
@@ -39,10 +47,27 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
-          },
-          "201": {
-            "description": "Created"
+            "description": "Conversation created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Conversation created successfully"
+                },
+                "conversation_id": {
+                  "type": "number",
+                  "example": 4
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
@@ -105,6 +130,10 @@
                 "conversation_id": {
                   "type": "number",
                   "example": 0
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
                 }
               }
             }
@@ -112,7 +141,79 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Conversation created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "total": {
+                  "type": "number",
+                  "example": 1
+                },
+                "total_pages": {
+                  "type": "number",
+                  "example": 1
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "example": 55
+                      },
+                      "conversation_id": {
+                        "type": "number",
+                        "example": 3
+                      },
+                      "sender_id": {
+                        "type": "number",
+                        "example": 1
+                      },
+                      "sender_name": {
+                        "type": "string",
+                        "example": "name"
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Hello"
+                      },
+                      "message_type": {
+                        "type": "string",
+                        "example": "text"
+                      },
+                      "reply_message_id": {
+                        "type": "number",
+                        "example": 0
+                      },
+                      "reply_message": {
+                        "type": "string",
+                        "example": ""
+                      },
+                      "is_edited": {
+                        "type": "number",
+                        "example": 0
+                      },
+                      "is_read": {
+                        "type": "number",
+                        "example": 0
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "example": "2026-08-12 12:04:06"
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
@@ -164,7 +265,28 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Conversation created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Message sent successfully"
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
@@ -218,7 +340,28 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Conversation created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Message updated"
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
