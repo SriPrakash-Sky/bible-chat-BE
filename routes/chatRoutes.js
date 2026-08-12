@@ -61,6 +61,7 @@ router.post(
       in: 'body',
       required: true,
       schema: {
+        user_id: 0,
         conversation_id: 0,
         page: 1
       }
@@ -167,6 +168,14 @@ router.post(
         user_id:2
       }
     }
+          #swagger.responses[200] = {
+    description: "Successfully",
+    schema: {
+        "success": true,
+        "message": "Messages marked as read",
+        "data": []
+      }
+  }
   */
 
   updateReadStatus,

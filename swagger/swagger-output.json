@@ -127,6 +127,10 @@
             "schema": {
               "type": "object",
               "properties": {
+                "user_id": {
+                  "type": "number",
+                  "example": 0
+                },
                 "conversation_id": {
                   "type": "number",
                   "example": 0
@@ -407,7 +411,28 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Messages marked as read"
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
             "description": "Bad Request"

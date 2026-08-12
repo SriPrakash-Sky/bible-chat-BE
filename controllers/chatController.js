@@ -306,7 +306,7 @@ export const getConversationsList = async (req, res) => {
 
 export const getSingleChatMessages = async (req, res) => {
   try {
-    const { conversation_id, page = 1, limit = 20 } = req.body;
+    const { conversation_id, user_id, page = 1, limit = 20 } = req.body;
 
     if (!conversation_id) {
       return res.status(400).json({
@@ -446,6 +446,20 @@ export const getSingleChatMessages = async (req, res) => {
         created_at: message.created_at,
       };
     });
+
+    // await db.query(
+    //   `
+    //   UPDATE messages
+    //   SET is_read = 1
+    //   WHERE
+    //       conversation_id = ?
+    //       AND sender_id != ?
+    //       AND is_read = 0
+    //   `,
+    //   [conversation_id, user_id],
+    // );
+
+    // await socketNotifier.markRead({ conversation_id, user_id });
 
     await handleRemoveNull(finalMessages);
 
@@ -901,6 +915,7 @@ export const updateReadStatus = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Messages marked as read",
+      data: [],
     });
   } catch (error) {
     await connection.rollback();
