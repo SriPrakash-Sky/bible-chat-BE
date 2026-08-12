@@ -70,6 +70,7 @@ router.post(
     description: "Conversation created successfully",
     schema:{
       "success": true,
+      "message": "Single convo",
       "total": 1,
       "total_pages": 1,
       "data": [

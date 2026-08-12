@@ -5,7 +5,7 @@
     "description": "Chat Module APIs",
     "version": "1.0.0"
   },
-  "host": "bible-chat.skyraantech.com/api/chat",
+  "host": "bible-chat.skyraantech.com/backend/api/chat",
   "basePath": "/",
   "schemes": [
     "https"
@@ -152,6 +152,10 @@
                 "success": {
                   "type": "boolean",
                   "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Single convo"
                 },
                 "total": {
                   "type": "number",

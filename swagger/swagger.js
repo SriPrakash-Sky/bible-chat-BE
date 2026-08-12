@@ -5,7 +5,7 @@ const doc = {
     title: "Chat API",
     description: "Chat Module APIs",
   },
-  host: "bible-chat.skyraantech.com/api/chat",
+  host: "bible-chat.skyraantech.com/backend/api/chat",
   // host: "localhost:5001/api/chat",
   // schemes: ["http"],
   schemes: ["https"],

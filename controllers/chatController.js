@@ -86,7 +86,13 @@ import { handleRemoveNull } from "../utils/helper.js";
 export const getConversation = async (req, res) => {
   try {
     const { app_id, post_id, sender_id, receiver_id } = req.body;
-
+    console.log(
+      "app_id, post_id, sender_id, receiver_id",
+      app_id,
+      post_id,
+      sender_id,
+      receiver_id,
+    );
     if (!sender_id || !receiver_id) {
       return res.status(400).json({
         success: false,
@@ -465,7 +471,7 @@ export const getSingleChatMessages = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-
+      message: "Single convo List",
       total,
 
       total_pages: Math.ceil(total / pageLimit),
