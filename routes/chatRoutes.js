@@ -10,6 +10,7 @@ import {
   updateReadStatus,
   editMessage,
   updateChatStatus,
+  replyMessage,
 } from "../controllers/chatController.js";
 
 const router = express.Router();
@@ -122,6 +123,37 @@ router.post(
   */
 
   sendMessage,
+);
+
+router.post(
+  "/reply-message",
+
+  /*
+    #swagger.tags = ['Chat']
+    #swagger.summary = 'Reply Message'
+
+    #swagger.parameters['body'] = {
+      in:'body',
+      required:true,
+      schema:{
+        conversation_id:1,
+        sender_id:1,
+        reply_message_id:1,
+        message:"Hello",
+        message_type:"text"
+      }
+    }
+       #swagger.responses[200] = {
+    description: "Reply sent successfully",
+    schema: {
+        "success": true,
+        "message": "Reply sent successfully",
+        "data": []
+      }
+  }
+  */
+
+  replyMessage,
 );
 
 router.post(

@@ -311,6 +311,82 @@
         }
       }
     },
+    "/reply-message": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Reply Message",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "conversation_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "sender_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "reply_message_id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Hello"
+                },
+                "message_type": {
+                  "type": "string",
+                  "example": "text"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reply sent successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Reply sent successfully"
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/edit-message": {
       "post": {
         "tags": [
