@@ -641,8 +641,8 @@ export const sendMessage = async (req, res) => {
       created_at: Date.now(),
     };
     console.log("487");
-    await socketNotifier.newMessage(newMsg);
-
+   let socResp =  await socketNotifier.newMessage(newMsg);
+    console.log("socResp =",socResp)
     return res.status(200).json({
       success: true,
       message: "Message sent successfully",
