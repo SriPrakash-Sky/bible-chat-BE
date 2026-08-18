@@ -19,9 +19,9 @@ export const socketNotifier = {
     axios.post(`${SOCKET_SERVER}/emit/mark-read`, data).catch(console.error),
   editMessage: (data) =>
     axios.post(`${SOCKET_SERVER}/emit/edit-message`, data).catch(console.error),
-  unsendMessage: (data) =>
+  replyMessage: (data) =>
     axios
-      .post(`${SOCKET_SERVER}/emit/unsend-message`, data)
+      .post(`${SOCKET_SERVER}/emit/reply-message`, data)
       .catch(console.error),
 
   // ── call events ─────────────────────────────────────────────────────────────

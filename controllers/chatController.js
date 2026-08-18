@@ -641,8 +641,8 @@ export const sendMessage = async (req, res) => {
       created_at: Date.now(),
     };
     console.log("487");
-   let socResp =  await socketNotifier.newMessage(newMsg);
-    console.log("socResp =",socResp)
+    let socResp = await socketNotifier.newMessage(newMsg);
+    console.log("socResp =", socResp);
     return res.status(200).json({
       success: true,
       message: "Message sent successfully",
@@ -754,6 +754,7 @@ export const replyMessage = async (req, res) => {
       sender_id,
       reply_message_id,
       message,
+      receiver_id,
       message_type = "text",
     } = req.body;
 
@@ -767,7 +768,7 @@ export const replyMessage = async (req, res) => {
     // Check original message
     const [reply] = await connection.query(
       `
-      SELECT id
+      SELECT id, message
       FROM messages
       WHERE id=?
       `,
@@ -847,14 +848,21 @@ export const replyMessage = async (req, res) => {
 
     await connection.commit();
 
-    // let newMsg = {
-    //   id: insert.insertId,
-    //   sender_id: sender_id,
-    //   message,
-    //   created_at: Date.now(),
-    //   is_read: 0,
-    // };
-    // await socketNotifier.newMessage(newMsg);
+    let newMsg = {
+      id: insert.insertId,
+      conversation_id,
+      sender_id: sender_id,
+      receiver_id,
+      message,
+      reply_message: reply[0]?.message,
+      reply_message_id,
+      created_at: Date.now(),
+      sender_name: "",
+      message_type: "text",
+      is_edited: 0,
+    };
+    console.log("487");
+    let socResp = await socketNotifier.replyMessage(newMsg);
 
     return res.status(200).json({
       success: true,

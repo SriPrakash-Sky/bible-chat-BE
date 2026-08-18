@@ -138,6 +138,7 @@ router.post(
       schema:{
         conversation_id:1,
         sender_id:1,
+        receiver_id:1,
         reply_message_id:1,
         message:"Hello",
         message_type:"text"
