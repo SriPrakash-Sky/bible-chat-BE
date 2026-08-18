@@ -902,11 +902,10 @@ export const updateReadStatus = async (req, res) => {
     await connection.query(
       `
       UPDATE messages
-      SET is_read = 1
+      SET is_read = 2
       WHERE
           conversation_id = ?
           AND sender_id != ?
-          AND is_read = 0
       `,
       [conversation_id, user_id],
     );
